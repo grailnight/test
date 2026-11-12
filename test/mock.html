@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mock feed</title>
+<style>
+  article { height: 400px; margin: 8px; background: #ddd; }
+  nav { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; gap: 20px; }
+</style>
+<!-- Упрощённая модель ленты: посты, реклама, рекомендации и бесконечная подгрузка. -->
+<main>
+  <div id="feed"></div>
+  <div id="sentinel" style="height:40px">loading…</div>
+</main>
+<nav>
+  <a href="/">home</a>
+  <a href="/explore/">search</a>
+  <a href="/reels/">reels</a>
+</nav>
+<script>
+  var feed = document.getElementById('feed');
+  var n = 0, loading = false;
+  window.pagingRequests = 0;
+
+  function addPost(kind) {
+    n++;
+    var wrap = document.createElement('div');
+    var article = document.createElement('article');
+    var header = document.createElement('header');
+    var user = document.createElement('a');
+    user.href = '/user' + n + '/';
+    user.textContent = 'user' + n;
+    header.appendChild(user);
+    if (kind === 'ad') {
+      var s = document.createElement('span'); s.textContent = 'Реклама'; header.appendChild(s);
+    }
+    if (kind === 'suggested') {
+      var b = document.createElement('div'); b.setAttribute('role', 'button'); b.textContent = 'Подписаться';
+      header.appendChild(b);
+    }
+    article.appendChild(header);
+    var link = document.createElement('a');
+    link.href = (kind === 'video' ? '/reel/' : '/p/') + 'ID' + n + '/';
+    link.textContent = kind + ' ' + n;
+    article.appendChild(link);
+    wrap.appendChild(article);
+    feed.appendChild(wrap);
+  }
+
+  function addBatch() {
+    ['post', 'post', 'ad', 'post', 'suggested', 'video', 'post', 'post'].forEach(addPost);
+    if (n === 8) {
+      var block = document.createElement('div');
+      block.id = 'people';
+      block.innerHTML = '<div><span>Рекомендации для вас</span><a href="/explore/people/">все</a></div>';
+      feed.appendChild(block);
+    }
+  }
+
+  function loadMore() {
+    if (loading) return;
+    loading = true;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/graphql/query');
+    xhr.onload = function () { loading = false; addBatch(); };
+    xhr.onerror = function () { loading = false; };
+    xhr.send('fb_api_req_friendly_name=PolarisFeedRootPaginationQuery&variables=%7B%7D');
+  }
+
+  addBatch();
+  new IntersectionObserver(function (entries) {
+    if (entries[0].isIntersecting) loadMore();
+  }, { rootMargin: '600px' }).observe(document.getElementById('sentinel'));
+  // как и настоящая лента, догружаемся, пока «дно» остаётся рядом
+  setInterval(function () {
+    var r = document.getElementById('sentinel').getBoundingClientRect();
+    if (r.top < innerHeight + 600) loadMore();
+  }, 100);
+</script>

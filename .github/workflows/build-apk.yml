@@ -1,0 +1,30 @@
+name: Build APK
+
+on:
+  push:
+    paths:
+      - 'android/**'
+      - 'filter/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build
+        working-directory: android
+        run: ./gradlew --no-daemon assembleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Minigram-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

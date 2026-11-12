@@ -1,0 +1,44 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.minigram'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'app.minigram'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    // Ключ лежит в репозитории нарочно: приложение ставится вручную, и одна
+    // и та же подпись нужна, чтобы новые сборки обновляли старую без переустановки.
+    signingConfigs {
+        shared {
+            storeFile rootProject.file('minigram.keystore')
+            storePassword 'minigram'
+            keyAlias 'minigram'
+            keyPassword 'minigram'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.shared
+        }
+    }
+
+    // Фильтр — общий с браузерным юзерскриптом.
+    sourceSets {
+        main.assets.srcDirs = ['../../filter']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
