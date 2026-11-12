@@ -18,7 +18,7 @@ instagram.com; пароль приложение не видит и нигде �
 
 Приложение — в папке `android/`. Готовый APK собирает GitHub Actions при каждом изменении:
 вкладка **Actions** → последний запуск **Build APK** → раздел **Artifacts** → `Minigram-apk`
-(скачается zip, внутри `app-release.apk`). При установке Android попросит разрешить установку
+(скачается zip, внутри `app-release.apk`); тот же файл сборка кладёт в `dist/Minigram.apk`. При установке Android попросит разрешить установку
 из неизвестных источников.
 
 Собрать самому: `cd android && ./gradlew assembleRelease` (нужны JDK 17 и Android SDK).

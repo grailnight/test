@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -28,3 +28,13 @@ jobs:
           name: Minigram-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
+      # Кладём готовый APK в репозиторий, чтобы его можно было скачать одним файлом.
+      - name: Publish APK to dist/
+        if: github.ref_type == 'branch'
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk dist/Minigram.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/Minigram.apk
+          git diff --cached --quiet || (git commit -m "Update built APK" && git push)
